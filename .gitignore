@@ -9,5 +9,5 @@ schema.sql
 test.py
 
 # ignore any pycache
-auctions/__pycache__
-commerce/__pycache__
+auctions/__pycache__/
+commerce/__pycache__/
