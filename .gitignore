@@ -1,0 +1,13 @@
+# ignore all media files
+auctions/media/images/*
+
+# ignore database and related file
+db.sqlite3
+schema.sql
+
+# ignore any test files
+test.py
+
+# ignore any pycache
+auctions/__pycache__
+commerce/__pycache__

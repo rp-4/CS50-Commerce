@@ -1,12 +1,13 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import Users, Categories
+from .models import Users, Categories, Images
 
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = Users
         fields = "__all__"
+
 
 def get_categories():
     categories = Categories.objects.all()
@@ -29,12 +30,19 @@ class NewListingForm(forms.Form):
 
     new_description = forms.CharField(label="", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Description'}))
     price = forms.IntegerField(label="", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Price'}))
+    image = forms.ImageField()
 
+# class NewImage(forms.Form):
+#     image = forms.ImageField()
+#     class Meta:
+#         model = Images
+#         fields = ['image']
 
 class ModifyListingForm(NewListingForm):
     
     STATUS_CHOICES = [
         ('active', 'Active'),
+        ('draft', 'Draft'),
         ('closed', 'Closed'),
         ('deleted', 'Deleted'),
     ]

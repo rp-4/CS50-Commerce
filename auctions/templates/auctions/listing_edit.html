@@ -8,9 +8,9 @@
         <div>{{ message }}</div>
     {% endif %}
     Listing edit page for {{ listing_id }}
-    <form action="{% url 'auctions:listing_edit' listing_id %}" method="POST">
+    <form action="{% url 'auctions:listing_edit' listing_id %}" enctype="multipart/form-data" method="POST">
         {% csrf_token %}
-        
+        <img src="{{ image.url}}" width="150" height="auto">
         {{ form }}
         
        

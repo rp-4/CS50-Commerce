@@ -6,10 +6,12 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
 
 
 from .models import Users, Categories, Listings, Images, Comments, Bids, Winners, Watchlists
 from .forms import NewListingForm, ModifyListingForm
+import os
 
 def index(request):
     # if Users.is_authenticated:
@@ -102,8 +104,11 @@ def listing_view(request, listing_id):
 
     try:
         listing = Listings.objects.get(id = listing_id)
+        image = Images.objects.get(listing_id = listing)
+
         return render(request, "auctions/listing_view.html", {
-            "listing": listing
+            "listing": listing,
+            "image": image.image
             })
     except Listings.DoesNotExist:
         return render(request, "auctions/listing_view.html", {
@@ -113,13 +118,12 @@ def listing_view(request, listing_id):
   
 @login_required      
 def listing_edit(request, listing_id):
+
     print("here", listing_id)
     
-    # get all categories
-    categories = Categories.objects.all()
-
     try:
         old_listing_info = Listings.objects.get(id = listing_id)
+        old_image = Images.objects.get(listing_id = old_listing_info)
         print(old_listing_info)
     except Listings.DoesNotExist:
         return render(request, "auctions/listing_view.html", {
@@ -130,21 +134,68 @@ def listing_edit(request, listing_id):
         # print("listing_edit", listing_id)
         print("saving in editing mode", listing_id)
 
-        print(request.POST["title"], 
-              request.POST["category"],
-              request.POST["description"],
+        print(request.POST["new_title"], 
+              request.POST["categories"],
+              request.POST["new_description"],
               request.POST["price"],
               request.POST["status"],
               "user id", request.user.id)
 
+            
+        title = request.POST["new_title"]
+        category = Categories.objects.get(category = request.POST["categories"])
+        description = request.POST["new_description"]
+        price = request.POST["price"]
+        status = request.POST["status"]
+        user_id = Users.objects.get(id = request.user.id)
+        new_image = request.FILES["image"]
+
+        # Attempt to add new listing
+        try:
+            Listings.objects.filter(id = listing_id).update(
+                                                title = title, 
+                                                category_id = category, 
+                                                description = description, 
+                                                listing_price = price,
+                                                added_by_user_id = user_id,
+                                                status = status)
+
+        except IntegrityError as e:
+            return render(request, "auctions/listing_edit.html", {
+                "form": ModifyListingForm(initial={'new_title': old_listing_info.title,
+                                                    'new_description': old_listing_info.description,
+                                                    'price': old_listing_info.listing_price,
+                                                    'status': (old_listing_info.status, old_listing_info.status.title()), 
+                                                    }),
+                "listing_id" : old_listing_info.id,
+                "image": old_image.image,
+                "message": f"Error while uploading image: {e}",
+                })
+        
+        try:
+            img_instance = get_object_or_404(Images, listing_id = old_listing_info)
+            old_img_to_delete = img_instance.image.path
+            img_instance.image = new_image
+            img_instance.save()
+            # Images.objects.filter(listing_id = old_listing_info).update(image = request.FILES["image"])
+        except IntegrityError as e:
+            return render(request, "auctions/listing_edit.html", {
+                "form": ModifyListingForm(initial={'new_title': old_listing_info.title,
+                                                    'new_description': old_listing_info.description,
+                                                    'price': old_listing_info.listing_price,
+                                                    'status': (old_listing_info.status, old_listing_info.status.title()), 
+                                                    }),
+                "listing_id" : old_listing_info.id,
+                "image": old_image.image,
+                "message": f"Error while uploading image: {e}",
+                })
+        
+        # delete old image
+        if os.path.exists(old_img_to_delete):
+            os.remove(old_img_to_delete)
+
         return HttpResponseRedirect(reverse("auctions:listing_view", kwargs={'listing_id': listing_id}))
 
-        
-    # return HttpResponseRedirect(reverse(listing_view))
-    # return render(request, "auctions/listing_edit.html", {
-    #     "listing" : old_listing_info,
-    #     "categories": categories,
-    # })
     else:
         return render(request, "auctions/listing_edit.html", {
         
@@ -154,24 +205,16 @@ def listing_edit(request, listing_id):
                                         'status': (old_listing_info.status, old_listing_info.status.title()), 
             }),
         "listing_id" : old_listing_info.id,
+        "image": old_image.image
         })
 
 
 @login_required      
 def listing_new(request):
     
-    # get all categories
-    categories = Categories.objects.all()
-
     if request.method == "POST":
-        # print("listing_edit", listing_id)
+
         print("Entering new Listing")
-        # print(request.POST["new_title"], 
-        #       request.POST["category"],
-        #       request.POST["new_description"],
-        #       request.POST["price"],
-        #       request.POST["status"],
-        #       "user id", request.user.id)
         
         print(request.POST["new_title"], 
               request.POST["new_description"],
@@ -180,27 +223,40 @@ def listing_new(request):
         
         # get listing id
 
-        # title = request.POST["title"]
-        # category = Categories.objects.get(id = request.POST["category"])
-        # description = request.POST["description"]
-        # price = request.POST["price"]
+        title = request.POST["new_title"]
+        category = Categories.objects.get(category = request.POST["categories"])
+        description = request.POST["new_description"]
+        price = request.POST["price"]
         # status = request.POST["status"]
-        # user_id = Users.objects.get(id = request.user.id)
+        user_id = Users.objects.get(id = request.user.id)
+        image = request.FILES["image"]
 
-  
-        # # Attempt to add new listing
-        # try:
-        #     listing = Listings.objects.get_or_create(title = title, 
-        #                                       category_id = category, 
-        #                                       description = description, 
-        #                                       listing_price = price,
-        #                                       added_by_user_id = user_id,
-        #                                       status = status)[0]
-        #     listing.save()
-        # except IntegrityError as e:
-        #     return render(request, "auctions/listing_new.html", {
-        #         "message": f"Listing already exist: {e}"
-        #     })
+        # Attempt to add new listing
+        try:
+            listing = Listings.objects.create(title = title, 
+                                              category_id = category, 
+                                              description = description, 
+                                              listing_price = price,
+                                              added_by_user_id = user_id,
+                                              status = 'active')
+            # dont use .save() with get_or_create()
+            # listing.save()
+            print("here in try", listing)
+        except IntegrityError as e:
+            return render(request, "auctions/listing_new.html", {
+                "message": f"Listing already exist: {e}"
+            })
+        
+        # get the listing to upload image
+        listing_pk = Listings.objects.get(title = title)
+        
+        try:
+            Images.objects.create(listing_id = listing_pk, image = image)
+        except IntegrityError as e:
+            return render(request, "auctions/listing_new.html", {
+                "message": f"Error while uploading image: {e}"
+            })
+
 
         # return HttpResponseRedirect(reverse("auctions:listing_view", kwargs={'listing_id': listing_id}))
         return HttpResponseRedirect(reverse("auctions:my_listings"))
@@ -208,8 +264,9 @@ def listing_new(request):
     else:
         return render(request, "auctions/listing_new.html", {
         
-        "form": NewListingForm(initial={'new_title': "testing title",
+        "form_new": NewListingForm(initial={'new_title': "testing title ",
                                         'new_description': "testing description",
                                         'price': 30,
             })
+         
         })

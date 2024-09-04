@@ -8,12 +8,13 @@
         <div>{{ message }}</div>
     {% endif %}
     Enter information for new listing.
-    <form action="{% url 'auctions:listing_new' %}" method="POST">
+    <form action="{% url 'auctions:listing_new' %}" enctype="multipart/form-data" method="POST">
         {% csrf_token %}
         
-        {{ form }}
+        {{ form_new }}
        
         <input class="btn btn-primary" type="submit" value="List">
+        
     </form>
 
 {% endblock %}

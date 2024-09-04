@@ -5,6 +5,7 @@ from datetime import datetime as dt
 from django.core.exceptions import ValidationError
 
 
+
 class Users(AbstractUser):
     pass
     # id = models.CharField(max_length=100, primary_key=True)
@@ -18,7 +19,7 @@ class Users(AbstractUser):
     # date_joined = models.CharField(max_length=100)
 
 class Categories(models.Model):
-    id = models.IntegerField(primary_key=True)
+    # id = models.IntegerField(primary_key=True, auto_created=True)
     category = models.CharField(max_length=32, unique=True, null=False)
 
     def __str__(self):
@@ -28,6 +29,7 @@ class Categories(models.Model):
 class Listings(models.Model):
     STATUS_CHOICES = [
         ('active', 'Active'),
+        ('draft', 'Draft'),
         ('closed', 'Closed'),
         ('deleted', 'Deleted'),
     ]
@@ -41,6 +43,11 @@ class Listings(models.Model):
     added_by_user_id = models.ForeignKey(Users, null=False, on_delete=models.CASCADE)
     status = models.CharField(max_length=8, choices=STATUS_CHOICES, default= 'active')
 
+    class Meta:
+        # Optionally, you can still enforce unique_together constraints if needed
+        # unique_together = ('category', 'title')  # Uncomment if necessary
+        pass
+
     def clean(self):
         super().clean()
         if self.listing_price <= 0:
@@ -52,7 +59,7 @@ class Listings(models.Model):
 
 class Images(models.Model):
     listing_id = models.ForeignKey(Listings, null=False, on_delete=models.CASCADE)
-    image = models.FileField(unique=True, null=False)
+    image = models.ImageField(upload_to='images/')
 
 
 class Comments(models.Model):
