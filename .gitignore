@@ -1,7 +1,6 @@
 # ignore all media files
-#auctions/media/images/*
-auctions/media/images/11188207_1587399894869279_5920247776507890834_n.jpg
-auctions/media/images/11203135_1587400218202580_6180775688446441637_n.jpg
+auctions/media/images/*
+
 
 # ignore database and related file
 db.sqlite3
