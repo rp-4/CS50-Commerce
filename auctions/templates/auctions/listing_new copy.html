@@ -1,0 +1,41 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    <h2>Register</h2>
+
+    {% if message %}
+        <div>{{ message }}</div>
+    {% endif %}
+    Enter information for new listing.
+    <form action="{% url 'auctions:listing_new' %}" method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <input class="form-control" autofocus type="text" name="title" placeholder="Title", value="{{ listing.title }}">
+        </div>
+        <div class="form-group">
+            <select name="category">
+                {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.category.title }}</option>
+                {% endfor %}
+                </select>
+        </div>
+
+        <div class="form-group">
+            <input class="form-control" type="text" name="description" placeholder="Description">
+        </div>
+        <div class="form-group">
+            <input class="form-control" type="number" name="price" placeholder="Listing Price", value=0>
+        </div>
+        
+        <div class="form-group">
+            <input type="radio" id="active" name="status" value="active" checked>
+            <label for="active">Active</label>
+            <input type="radio" id="closed" name="status" value="closed">
+            <label for="closed">Closed</label>
+        </div>
+       
+        <input class="btn btn-primary" type="submit" value="List">
+    </form>
+
+{% endblock %}

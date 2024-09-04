@@ -1,0 +1,25 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<div>
+    
+    <h2>Active Listings</h2>
+    
+    <li>Listing Id: {{ listing.id }}</li>
+    <li>Category Id: {{ listing.category_id }}</li>
+    <li>Listing Title: {{ listing.title }}</li>
+    <li>Listing Description: {{ listing.description }}</li>
+    <li>Listing Price: {{ listing.listing_price }}</li>
+    <li>Listing Date: {{ listing.datetime_added }}</li>
+    <li>Listing Status: {{ listing.status }}</li>
+    <li>Listing User: {{ listing.added_by_user_id }}{{ user }}</li>
+    
+    {% if user.is_authenticated and listing.added_by_user_id == user %}
+    <li><a href="{% url 'auctions:listing_edit' listing.id %}">Edit</a></li>
+    <li><a href="{% url 'auctions:index' %}">Back</a></li>
+    {% else %}
+        <li><a href="{% url 'auctions:index' %}">Back</a></li>
+    {% endif %}
+</div>
+    
+{% endblock %}
